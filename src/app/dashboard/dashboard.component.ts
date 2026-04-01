@@ -17,50 +17,72 @@ interface CartItem {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="cart">
-      <div class="cart-header">
-        <h2>🛒 Your Cart</h2>
-        <span class="badge">{{ totalItems() }} item{{ totalItems() === 1 ? '' : 's' }}</span>
-      </div>
+    <div class="page-wrapper">
 
-      @for (item of items(); track item.id) {
-        <div class="cart-item">
-          <div class="item-img" [style.background]="item.bg">{{ item.emoji }}</div>
-          <div class="item-info">
-            <div class="name">{{ item.name }}</div>
-            <div class="sub">{{ item.sub }}</div>
-          </div>
-          <div class="item-qty">
-            <button class="qty-btn" (click)="decrement(item.id)">−</button>
-            <span class="qty-val">{{ item.qty }}</span>
-            <button class="qty-btn" (click)="increment(item.id)">+</button>
-          </div>
-          <div class="item-price">${{ (item.price * item.qty).toFixed(2) }}</div>
-          <button class="remove-btn" (click)="remove(item.id)">✕</button>
+      <!-- Cart Card -->
+      <div class="cart">
+        <div class="cart-header">
+          <h2>🛒 Your Cart</h2>
+          <span class="badge">{{ totalItems() }} item{{ totalItems() === 1 ? '' : 's' }}</span>
         </div>
-      }
 
-      @if (items().length === 0) {
-        <div class="empty">🛍️ Your cart is empty</div>
-      }
+        @for (item of items(); track item.id) {
+          <div class="cart-item">
+            <div class="item-img" [style.background]="item.bg">{{ item.emoji }}</div>
+            <div class="item-info">
+              <div class="name">{{ item.name }}</div>
+              <div class="sub">{{ item.sub }}</div>
+            </div>
+            <div class="item-qty">
+              <button class="qty-btn" (click)="decrement(item.id)">−</button>
+              <span class="qty-val">{{ item.qty }}</span>
+              <button class="qty-btn" (click)="increment(item.id)">+</button>
+            </div>
+            <div class="item-price">\${{ (item.price * item.qty).toFixed(2) }}</div>
+            <button class="remove-btn" (click)="remove(item.id)">✕</button>
+          </div>
+        }
 
-      <div class="cart-summary">
-        <div class="summary-row"><span>Subtotal</span><span>${{ subtotal().toFixed(2) }}</span></div>
-        <div class="summary-row"><span>Shipping</span><span>Free</span></div>
-        <div class="summary-row"><span>Discount</span><span class="discount">−$20.00</span></div>
-        <div class="summary-row total"><span>Total</span><span>${{ total().toFixed(2) }}</span></div>
+        @if (items().length === 0) {
+          <div class="empty">🛍️ Your cart is empty</div>
+        }
+
+        <div class="cart-summary">
+          <div class="summary-row"><span>Subtotal</span><span>\${{ subtotal().toFixed(2) }}</span></div>
+          <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+          <div class="summary-row"><span>Discount</span><span class="discount">−$20.00</span></div>
+          <div class="summary-row total"><span>Total</span><span>\${{ total().toFixed(2) }}</span></div>
+        </div>
+
+        <div class="promo-row">
+          <input class="promo-input" type="text" [(ngModel)]="promoCode" placeholder="Promo code..." />
+          <button class="promo-apply" (click)="applyPromo()">Apply</button>
+        </div>
+
+        @if (promoMsg()) {
+          <div class="promo-msg">{{ promoMsg() }}</div>
+        }
+
+        <button class="checkout-btn" (click)="checkout()">Proceed to Checkout →</button>
       </div>
 
-      <div class="promo-row">
-        <input class="promo-input" type="text" [(ngModel)]="promoCode" placeholder="Promo code..." />
-        <button class="promo-apply" (click)="applyPromo()">Apply</button>
-      </div>
+      <!-- Footer -->
+      <footer>
+        <div class="footer-trust">
+          <div class="trust-item"><span class="icon">🔒</span> Secure Checkout</div>
+          <div class="trust-item"><span class="icon">🚚</span> Free Shipping</div>
+          <div class="trust-item"><span class="icon">↩️</span> Easy Returns</div>
+        </div>
+        <hr class="footer-divider" />
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Help Center</a>
+          <a href="#">Contact Us</a>
+        </div>
+        <p class="footer-copy">© 2024 <span class="brand">ShopNest</span>. All rights reserved.</p>
+      </footer>
 
-      @if (promoMsg()) {
-        <div class="promo-msg">{{ promoMsg() }}</div>
-      }
-
-      <button class="checkout-btn" (click)="checkout()">Proceed to Checkout →</button>
     </div>
   `,
   styles: [`
@@ -79,13 +101,21 @@ interface CartItem {
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* ── Cart ── */
     .cart {
       background: #fff;
       border-radius: 20px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.10);
       padding: 32px;
       width: 100%;
-      max-width: 480px;
     }
 
     .cart-header {
@@ -258,8 +288,8 @@ interface CartItem {
       border: 1.5px solid #e0d9ff;
       border-radius: 10px;
       cursor: pointer;
-      transition: background 0.2s;
       font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
     }
 
     .promo-apply:hover { background: #ede9ff; }
@@ -289,6 +319,65 @@ interface CartItem {
 
     .checkout-btn:hover { opacity: 0.92; transform: translateY(-1px); }
     .checkout-btn:active { transform: translateY(0); }
+
+    /* ── Footer ── */
+    footer {
+      width: 100%;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .footer-trust {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: #888;
+      font-weight: 500;
+    }
+
+    .trust-item .icon { font-size: 1rem; }
+
+    .footer-divider {
+      border: none;
+      border-top: 1px solid #e4e4e4;
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 0.75rem;
+      color: #aaa;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: #6c63ff; }
+
+    .footer-copy {
+      font-size: 0.72rem;
+      color: #bbb;
+    }
+
+    .footer-copy .brand {
+      color: #6c63ff;
+      font-weight: 600;
+    }
   `]
 })
 export class DashboardComponent {
